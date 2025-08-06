@@ -4,6 +4,8 @@ Cette application Spring Boot est une API REST de gestion de joueurs, avec docum
 
 ---
 
+![](./src/main/resources/static/image/open-api-swagger.png)
+
 ## 🔧 Prérequis
 
 - Java 21
@@ -33,7 +35,8 @@ Ou via un IDE :
 - Clique sur "Run"
 
 Par défaut, l’API sera accessible à l’adresse :  
-📍 `http://localhost:8080`
+📍 `http://localhost:8080` (en local)
+📍 `https://app-atelier-api-sse.herokuapp.com/` (en production)
 
 ---
 
@@ -48,16 +51,17 @@ Tu pourras tester toutes les routes directement via l’interface.
 ---
 
 ## Endpoints principaux
+Voici les différentes routes à tester pour l'API :
 
-| Méthode | Endpoint            | Description                            |
-|---------|---------------------|----------------------------------------|
-| GET     | `/players`          | Récupérer tous les joueurs             |
-| GET     | `/players/{id}`     | Récupérer un joueur par son ID         |
-| POST    | `/players`          | Ajouter un nouveau joueur              |
-| PATCH   | `/players`          | Mettre à jour partiellement un joueur  |
-| DELETE  | `/players`          | Supprimer un joueur                    |
-| GET     | `/players/stats`    | Statistiques globales des joueurs      |
-| GET     | `/players/sorted`   | Joueurs triés par classement           |
+| Méthode | Endpoint                                   | Description                           |
+|---------|--------------------------------------------|-------------------------------------|
+| GET     | [ `/players`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players)          | Récupérer tous les joueurs           |
+| GET     | [ `/players/{id}`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players/{id}) | Récupérer un joueur par son ID       |
+| POST    | [ `/players`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players)          | Ajouter un nouveau joueur            |
+| PATCH   | [ `/players`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players)          | Mettre à jour partiellement un joueur|
+| DELETE  | [ `/players`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players)          | Supprimer un joueur                  |
+| GET     | [ `/players/stats`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players/stats)    | Statistiques globales des joueurs    |
+| GET     | [ `/players/sorted`](https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/api/players/sorted)  | Récupérer les joueurs triés          |
 
 ---
 
@@ -140,6 +144,21 @@ Une fois l'application démarrée, accède à la documentation interactive de l�
         http://localhost:8080/swagger-ui/index.html
 
         http://localhost:8080/v3/api-docs (JSON brut de l’API)
+
+## Deployé l'application avec docker
+
+### Prérequis
+- Installer [Docker](https://docs.docker.com/get-docker/)
+
+### Netoyer le packge maven
+mvn clean package (si la commande n'existe pas installer directement maven) ==>  https://maven.apache.org/download.cgi (windows) / Tapez la commande suivante brew install maven (sur Mac) puis réessayez
+
+
+### Créé l'image docker
+docker build -t spring-atelier-api-sse .
+
+### Créer le conteneur et lancez l'imafe
+docker run -p 9090:8080 spring-atelier-api-sse
 
 ## Déploiement Héroku
 
