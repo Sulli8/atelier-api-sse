@@ -1,6 +1,5 @@
 package com.example.atelier_api_sullivan_sextius.dto;
 
-import com.example.atelier_api_sullivan_sextius.entity.StatsData;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,6 +34,6 @@ public class PlayerDTO {
     @JsonProperty("country")
     private CountryDTO country;
     @JsonProperty("data")
-    private StatsData data;
+    private StatsDataDTO data;
 
 }

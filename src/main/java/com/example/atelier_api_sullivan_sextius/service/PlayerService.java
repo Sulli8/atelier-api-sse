@@ -2,132 +2,135 @@ package com.example.atelier_api_sullivan_sextius.service;
 
 import com.example.atelier_api_sullivan_sextius.dto.PlayerDTO;
 import com.example.atelier_api_sullivan_sextius.dto.PlayerStatsDTO;
-import com.example.atelier_api_sullivan_sextius.entity.Player;
+import com.example.atelier_api_sullivan_sextius.dto.SuccessDTO;
 import com.example.atelier_api_sullivan_sextius.exceptions.BadRequestException;
-import com.example.atelier_api_sullivan_sextius.exceptions.InternalServerException;
+import com.example.atelier_api_sullivan_sextius.exceptions.PlayerNotFoundException;
 import com.example.atelier_api_sullivan_sextius.exceptions.ResourceNotFoundException;
-import com.example.atelier_api_sullivan_sextius.wrapper.PlayersResponse;
+import com.example.atelier_api_sullivan_sextius.storage.PlayerStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.atelier_api_sullivan_sextius.entity.Player.convertCountryDTOToCountry;
-import static com.example.atelier_api_sullivan_sextius.reader.PlayerJsonReader.savePlayersJsonFromApiToFile;
 
 @Service
 public class PlayerService {
-    private final ObjectMapper MAPPER = new ObjectMapper();
-    private  String json ;
-    public PlayerService() {}
-    @PostConstruct
-    public void init() {
-        try {
-            String filePath = savePlayersJsonFromApiToFile("tmp/players.json");
-            if(filePath != null) {
-                json = Files.readString(Paths.get("tmp", "players.json"));
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+    private ObjectMapper mapper = new  ObjectMapper();
+    private final PlayerStorage playerStorage;
+
+
+    public PlayerService(ObjectMapper mapper, PlayerStorage playerStorage) {
+        this.mapper = mapper;
+        this.playerStorage = playerStorage;
     }
+
     private Long generateId() {
         return System.currentTimeMillis();
     }
-    public List<Player> getAllPlayers() throws IOException {
-        List<Player> players = MAPPER.readValue(json, PlayersResponse.class).getPlayers();
+
+    public Map<String, PlayerDTO> getAllPlayers() {
+        if (playerStorage.getPlayers() == null) {
+            throw new ResourceNotFoundException("No players data provided");
+        }
+        Map<String, PlayerDTO> players = playerStorage.getPlayers();
         return players;
     }
-    public Player addPlayer(PlayerDTO dto) {
+
+    public Map<String, PlayerDTO> addPlayer(PlayerDTO dto) {
+        if(dto.getId() == null) {
+            dto.setId(generateId());
+        }
         if (dto.getFirstName() == null || dto.getLastName() == null || dto.getSex() == null) {
-            throw new BadRequestException("Le prénom, le nom et le sexe sont obligatoires.");
+            throw new BadRequestException("The first name, last name, and gender are required.");
         }
         if (dto.getCountry() == null || dto.getCountry().getCode() == null) {
-            throw new BadRequestException("Le pays et son code sont obligatoires.");
+            throw new BadRequestException("The country and its code are required.");
         }
-
-        try {
-            Player player = new Player();
-            player.setId(generateId());
-            player.setFirstName(dto.getFirstName());
-            player.setLastName(dto.getLastName());
-            player.setSex(dto.getSex());
-            player.setShortName(dto.getShortName());
-            player.setPicture(dto.getPicture());
-            player.setCountry(convertCountryDTOToCountry(dto.getCountry()));
-            player.setData(dto.getData());
-
-            List<Player> players = MAPPER.readValue(json, PlayersResponse.class).getPlayers();
-            players.add(player);
-
-            PlayersResponse updatedResponse = new PlayersResponse();
-            updatedResponse.setPlayers(players);
-
-            String updatedJson = MAPPER.writeValueAsString(updatedResponse);
-            Files.writeString(Paths.get("tmp/players.json"), updatedJson);
-
-            return player;
-
-        } catch (IOException e) {
-            throw new InternalServerException("Erreur lors de l'accès au fichier des joueurs.", e);
-        }
-    }
-    public Player getPlayerById(Long id) throws IOException {
-        return getAllPlayers().stream()
-                .filter(player -> player.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Le joueur avec l'id " + id + " n'existe pas."));
+        return playerStorage.addOrUpdatePlayer(dto);
     }
 
-    private String getTopCountryByWinRatio(List<Player> players) {
-        return players.stream()
-                .collect(Collectors.groupingBy(p -> p.getCountry().getCode()))
+
+    public PlayerDTO getPlayerById(Long id) {
+        PlayerDTO player = playerStorage.getPlayerById(id.toString());
+        if (player == null) {
+            throw new PlayerNotFoundException("The player with id " + id + " does not exist.");
+        }
+        return playerStorage.getPlayerById(id.toString());
+    }
+
+
+    public List<PlayerDTO>  getPlayersSortedByRank(Map<String, PlayerDTO> players) {
+        if (players == null || players.isEmpty()) {
+            throw new ResourceNotFoundException("No players data provided");
+        }
+
+        return players.values().stream()
+                .sorted(Comparator.comparingInt(playerDTO -> playerDTO.getData().getRank()))
+                .collect(Collectors.toList());
+    }
+
+    public String getTopCountryByWinRatio(Map<String, PlayerDTO> players) {
+        if (players == null || players.isEmpty()) {
+            throw new ResourceNotFoundException("No players data provided");
+        }
+
+        List<PlayerDTO> validPlayers = players.values().stream()
+                .filter(p -> p.getCountry() != null && p.getCountry().getCode() != null)
+                .collect(Collectors.toList());
+
+        if (validPlayers.isEmpty()) {
+            throw new ResourceNotFoundException("No country found with players data");
+        }
+
+        return validPlayers.stream()
+                .collect(Collectors.groupingBy(playerDTO -> playerDTO.getCountry().getCode()))
                 .entrySet()
                 .stream()
                 .max(Comparator.comparingDouble(entry -> {
-                    List<Player> ps = entry.getValue();
+                    List<PlayerDTO> playerDTOStats = entry.getValue();
 
-                    double totalMatches = ps.stream()
-                            .mapToInt(p -> {
-                                if (p.getData() == null || p.getData().getLast() == null) return 0;
-                                return p.getData().getLast().size();
+                    double totalMatches = playerDTOStats.stream()
+                            .mapToInt(playerDTO -> {
+                                if (playerDTO.getData() == null || playerDTO.getData().getLast() == null) return 0;
+                                return playerDTO.getData().getLast().size();
                             })
                             .sum();
 
-                    double totalWins = ps.stream()
-                            .mapToInt(p -> {
-                                if (p.getData() == null || p.getData().getLast() == null) return 0;
-                                return (int) p.getData().getLast().stream().filter(result -> result == 1).count();
+                    double totalWins = playerDTOStats.stream()
+                            .mapToInt(playerDTO -> {
+                                if (playerDTO.getData() == null || playerDTO.getData().getLast() == null) return 0;
+                                return (int) playerDTO.getData().getLast().stream().filter(result -> result == 1).count();
                             })
                             .sum();
 
                     return totalMatches == 0 ? 0.0 : totalWins / totalMatches;
                 }))
                 .map(Map.Entry::getKey)
-                .orElse("Inconnu");
-
+                .orElseThrow(() -> new ResourceNotFoundException("No valid data to calculate win ratio"));
     }
-    private double calculateAverageBmi(List<Player> players) {
-        return players.stream()
-                .mapToDouble(p -> {
-                    if (p.getData() == null) return 0.0;
-                    double heightInMeters = p.getData().getHeight() / 100.0;
-                    double weightInKg = p.getData().getWeight() / 1000.0;
+
+    public double calculateAverageBmi(Map<String, PlayerDTO> players) {
+        if (players == null || players.isEmpty()) {
+            throw new ResourceNotFoundException("No players data provided");
+        }
+        return players.values().stream()
+                .mapToDouble(playerDTO -> {
+                    if (playerDTO.getData() == null) return 0.0;
+                    double heightInMeters = playerDTO.getData().getHeight() / 100.0;
+                    double weightInKg = playerDTO.getData().getWeight() / 1000.0;
                     if (heightInMeters == 0) return 0.0;
 
                     return weightInKg / (heightInMeters * heightInMeters);
                 })
                 .average()
                 .orElse(0.0);
-
     }
-    private double calculateMedianHeight(List<Player> players) {
-        List<Integer> heights = players.stream()
+
+    public double calculateMedianHeight(Map<String, PlayerDTO> players) {
+        if (players == null || players.isEmpty()) {
+            throw new ResourceNotFoundException("No players data provided");
+        }
+        List<Integer> heights = players.values().stream()
                 .filter(p -> p.getData() != null)
                 .map(p -> p.getData().getHeight())
                 .sorted()
@@ -144,21 +147,53 @@ public class PlayerService {
     }
 
 
-    public PlayerStatsDTO getStatistics() throws IOException {
-        List<Player> players = getAllPlayers();
+    public PlayerStatsDTO getStatistics() {
+        Map<String, PlayerDTO> players = getAllPlayers();
+        if (players == null || players.isEmpty()) {
+            throw new ResourceNotFoundException("No players data provided");
+        }
+
+        boolean allInvalid = players.values().stream()
+                .allMatch(player -> player.getData() == null || player.getCountry() == null);
+
+        if (allInvalid) {
+            throw new ResourceNotFoundException("No valid players data (missing data or country)");
+        }
+
         if (players.isEmpty()) {
             return PlayerStatsDTO.builder()
-                    .topCountryByWinRatio("Aucun")
+                    .topCountryByWinRatio("Unknown")
                     .averageBmi(0.0)
                     .medianHeight(0.0)
                     .build();
         }
+
         return PlayerStatsDTO.builder()
                 .topCountryByWinRatio(getTopCountryByWinRatio(players))
                 .averageBmi(calculateAverageBmi(players))
                 .medianHeight(calculateMedianHeight(players))
                 .build();
     }
+
+    public Map<String, PlayerDTO>  patchPlayer(PlayerDTO updates) {
+        return playerStorage.addOrUpdatePlayer(updates);
+    }
+
+    public SuccessDTO deletePlayer(PlayerDTO delete) {
+        if (delete == null || delete.getId() == null) {
+            throw new IllegalArgumentException("Player Id cannot be null or empty");
+        }
+
+        Map<String, PlayerDTO> players = playerStorage.deletePlayer(delete);
+
+        boolean successfullyDeleted = !players.containsKey(delete.getId().toString());
+        SuccessDTO successDTO = new SuccessDTO();
+        successDTO.setSuccess(successfullyDeleted);
+
+        return successDTO;
+    }
+
+
 
 
 }

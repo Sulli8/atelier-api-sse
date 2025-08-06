@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 @Builder
 public class CountryDTO {
 
@@ -14,4 +13,11 @@ public class CountryDTO {
     private String code;
     @JsonProperty("picture")
     private String picture;
+
+    public CountryDTO() {}
+
+    public CountryDTO(String code, String picture) {
+        this.code = code;
+        this.picture = picture;
+    }
 }

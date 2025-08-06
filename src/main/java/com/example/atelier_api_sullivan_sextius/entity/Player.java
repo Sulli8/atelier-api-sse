@@ -1,10 +1,13 @@
 package com.example.atelier_api_sullivan_sextius.entity;
 
 import com.example.atelier_api_sullivan_sextius.dto.CountryDTO;
+import com.example.atelier_api_sullivan_sextius.dto.StatsDataDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -35,6 +38,18 @@ public class Player {
             }
             return new Country(dto.getCode(), dto.getPicture());
         }
-
+    public static StatsData convertStatsDataDTOToStatsData(StatsDataDTO statsDataDTO) {
+        if (statsDataDTO == null) {
+            return null;
+        }
+        return StatsData.builder()
+                .rank(statsDataDTO.getRank())
+                .points(statsDataDTO.getPoints())
+                .weight(statsDataDTO.getWeight())
+                .height(statsDataDTO.getHeight())
+                .age(statsDataDTO.getAge())
+                .last(statsDataDTO.getLast())
+                .build();
+    }
 
 }
