@@ -44,7 +44,8 @@ Par défaut, l’API sera accessible à l’adresse :
 
 Une fois l’application démarrée, accède à Swagger UI :
 
-🔗 `http://localhost:8080/swagger-ui/index.html`
+🔗 `http://localhost:8080/swagger-ui/index.html` (en local)
+🔗 `https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/swagger-ui/index.html` (en production)
 
 Tu pourras tester toutes les routes directement via l’interface.
 
@@ -144,6 +145,14 @@ Une fois l'application démarrée, accède à la documentation interactive de l�
         http://localhost:8080/swagger-ui/index.html
 
         http://localhost:8080/v3/api-docs (JSON brut de l’API)
+
+👉 🔗 `https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/swagger-ui.html` (en production)
+
+🔄 Redirection : si cette URL ne fonctionne pas, essaye aussi :
+
+`https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/swagger/index.html`
+
+`https://app-atelier-api-sse-17cc7a059d18.herokuapp.com/v3/api-docs` (JSON brut de l’API)
 
 ## Deployé l'application avec docker
 
