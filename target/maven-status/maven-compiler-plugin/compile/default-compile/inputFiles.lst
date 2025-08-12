@@ -11,6 +11,7 @@
 /Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/dto/PlayerDTO.java
 /Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/exceptions/PlayerNotFoundException.java
 /Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/entity/Player.java
+/Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/storage/PlayerStorageInterface.java
 /Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/controller/PlayerController.java
 /Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/dto/CountryDTO.java
 /Users/sullivan/Desktop/atelier-api-sse/src/main/java/com/example/atelier_api_sullivan_sextius/entity/Country.java

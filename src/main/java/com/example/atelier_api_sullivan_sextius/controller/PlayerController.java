@@ -5,20 +5,19 @@ import com.example.atelier_api_sullivan_sextius.dto.PlayerStatsDTO;
 import com.example.atelier_api_sullivan_sextius.dto.SuccessDTO;
 import com.example.atelier_api_sullivan_sextius.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@Controller
 @RequestMapping("/api/players")
 public class PlayerController {
-    @Autowired
-    private PlayerService playerService;
+   private final PlayerService playerService;
 
+    public PlayerController(PlayerService playerService) {
+        this.playerService = playerService;
+    }
 
     @GetMapping(value="")
     @Operation(
@@ -82,9 +81,8 @@ public class PlayerController {
             summary = "Récupérer les joueurs triés par classement",
             description = "Retourne la liste de tous les joueurs triée en fonction de leur classement."
     )
-    public Map<String, PlayerDTO> getPlayersSortedByRank() {
+    public List< PlayerDTO> getPlayersSortedByRank() {
         Map<String, PlayerDTO> players = playerService.getAllPlayers();
-        playerService.getPlayersSortedByRank(players);
-        return players;
+        return  playerService.getPlayersSortedByRank(players);
     }
 }

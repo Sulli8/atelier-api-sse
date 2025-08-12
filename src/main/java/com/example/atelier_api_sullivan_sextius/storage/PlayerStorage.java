@@ -15,7 +15,7 @@ import java.util.Map;
 
 
 @Component
-public class PlayerStorage {
+public class PlayerStorage implements PlayerStorageInterface {
     private ObjectMapper mapper = new  ObjectMapper();
     @Value("${players.file}")
     String playersFile;

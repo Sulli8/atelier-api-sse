@@ -23,3 +23,4 @@ com/example/atelier_api_sullivan_sextius/entity/Country.class
 com/example/atelier_api_sullivan_sextius/entity/Player.class
 com/example/atelier_api_sullivan_sextius/exceptions/PlayerNotFoundException.class
 com/example/atelier_api_sullivan_sextius/dto/CountryDTO$CountryDTOBuilder.class
+com/example/atelier_api_sullivan_sextius/storage/PlayerStorageInterface.class

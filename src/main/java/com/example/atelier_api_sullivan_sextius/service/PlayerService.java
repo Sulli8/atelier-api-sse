@@ -7,6 +7,7 @@ import com.example.atelier_api_sullivan_sextius.exceptions.BadRequestException;
 import com.example.atelier_api_sullivan_sextius.exceptions.PlayerNotFoundException;
 import com.example.atelier_api_sullivan_sextius.exceptions.ResourceNotFoundException;
 import com.example.atelier_api_sullivan_sextius.storage.PlayerStorage;
+import com.example.atelier_api_sullivan_sextius.storage.PlayerStorageInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -15,9 +16,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PlayerService {
-    private ObjectMapper mapper = new  ObjectMapper();
-    private final PlayerStorage playerStorage;
-
+    private ObjectMapper mapper;
+    private final PlayerStorageInterface playerStorage;
 
     public PlayerService(ObjectMapper mapper, PlayerStorage playerStorage) {
         this.mapper = mapper;
